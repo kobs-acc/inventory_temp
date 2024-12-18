@@ -1,5 +1,3 @@
-package  reception;
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -7,8 +5,7 @@ import java.io.*;
 import java.util.Random;
 
 public class BillingFrame{
-    
-    //attributes
+    //attributes/instance variables
     private JFrame billingFrame;
     private JButton backButton;
     private JButton logoutButton;
@@ -17,17 +14,16 @@ public class BillingFrame{
     private JTextField productIdField;
     private JTable inventoryTable;
     private JLabel totalLabel;
-
     private DefaultTableModel tableModel;
     private double totalPrice = 0.0;
 
-    //files
-    private static final String INVENTORY_FILE = "src/reception/inventory.txt";
-    private static final String ORDERS_FILE = "src/reception/orders.txt";
+    //for files handling
+    private static final String INVENTORY_FILE = "inventory.txt";
+    private static final String ORDERS_FILE = "orders.txt";
 
     //constructor
     public BillingFrame(){
-        //main billing frame (main frame)
+        //main billing frame stuff tapos set up
         billingFrame = new JFrame("StockTrack: Supermarket Inventory System");
         billingFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         billingFrame.setSize(800, 500);
@@ -50,18 +46,16 @@ public class BillingFrame{
 
         backButton = createStyledButton("BACK");
         logoutButton = createStyledButton("LOG OUT");
-        
-        //add them to the header panel
         buttonPanel.add(backButton);
         buttonPanel.add(logoutButton);
         headerPanel.add(buttonPanel, BorderLayout.EAST);
 
         //center Panel for the table
         JPanel centerPanel = new JPanel(new BorderLayout());
-        centerPanel.setBackground(new Color(0xFFFFFF));
+        centerPanel.setBackground(Color.WHITE);
         centerPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        //product key input
+        //product key input 
         JPanel productPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
         productPanel.setBackground(Color.WHITE);
 
@@ -71,38 +65,37 @@ public class BillingFrame{
         productIdField.setBorder(BorderFactory.createLineBorder(new Color(0x0054B4), 2));
         productPanel.add(productIdLabel);
         productPanel.add(productIdField);
-
         centerPanel.add(productPanel, BorderLayout.NORTH);
 
         //table for inventory orders
-        String[] columnNames = {"Item Name", "Quantity", "Price", "Product Key"};
+        String[] columnNames = {"Product ID", "Product Name", "Our Price", "Quantity", "Company"};
         tableModel = new DefaultTableModel(columnNames, 0);
         inventoryTable = new JTable(tableModel);
+        inventoryTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); 
+        
+        //table actions (checks if the quantity is changed)
+        inventoryTable.getModel().addTableModelListener(e -> updateTotalPrice());
 
         JScrollPane tableScrollPane = new JScrollPane(inventoryTable);
         tableScrollPane.setBorder(BorderFactory.createLineBorder(new Color(0x0054B4), 2));
         centerPanel.add(tableScrollPane, BorderLayout.CENTER);
 
-        //bottom panel
+        //bottom Panel
         JPanel footerPanel = new JPanel(new BorderLayout());
         footerPanel.setBackground(new Color(0x0054B4));
         footerPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
-        //generate and delete buttons
+        //generate bills and delete buttons
         JPanel actionButtonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         actionButtonsPanel.setBackground(new Color(0x0054B4));
 
         generateBillButton = createStyledButton("Generate Bill");
         deleteButton = createStyledButton("Delete");
-
-        //add them to the button panel
         actionButtonsPanel.add(generateBillButton);
         actionButtonsPanel.add(deleteButton);
-
-        //add the button panel to footer panel
         footerPanel.add(actionButtonsPanel, BorderLayout.WEST);
 
-        //total
+        //total label for showing the overall total of the order
         totalLabel = new JLabel("Total: P0.0");
         totalLabel.setForeground(Color.WHITE);
         totalLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
@@ -119,9 +112,8 @@ public class BillingFrame{
         generateBillButton.addActionListener(click -> generateBill());
         deleteButton.addActionListener(click -> deleteSelectedProduct());
 
-        //billing main frame visible
+        //make the billing main frame visible
         billingFrame.setVisible(true);
-        logoutButton.addActionListener(click -> logout());
     }
 
     //method for styling buttons
@@ -139,7 +131,7 @@ public class BillingFrame{
         return button;
     }
 
-// method for searching product key and adding it to the order
+    //method for search product key
     private void searchProductByKey(){
         String inputKey = productIdField.getText().trim();
         if(inputKey.isEmpty()){
@@ -147,23 +139,15 @@ public class BillingFrame{
             return;
         }
 
-        try(BufferedReader br = new BufferedReader(new FileReader(INVENTORY_FILE))) {
+        try(BufferedReader br = new BufferedReader(new FileReader(INVENTORY_FILE))){
             String line;
             boolean found = false;
 
-            while((line = br.readLine()) != null) {
+            while((line = br.readLine()) != null){
                 String[] data = line.split(",");
 
-                if(data.length >= 4 && data[3].trim().equals(inputKey)) { // Product key matches
-                    // Name, Quantity, Price, Product Key, Category, Supplier
-                    tableModel.addRow(new Object[]{
-                        data[0],      // Item Name
-                        "1",           // Default to 1 quantity
-                        data[2],       // Price
-                        data[3]        // Product Key
-                    });
-                    totalPrice += Double.parseDouble(data[2]); //Update total price
-                    totalLabel.setText("Total: P" + String.format("%.2f", totalPrice));
+                if(data.length == 6 && data[0].equals(inputKey)){              //check kung match ID
+                    tableModel.addRow(new Object[]{data[0], data[1], data[3], 1, data[5]});
                     found = true;
                     break;
                 }
@@ -173,12 +157,24 @@ public class BillingFrame{
                 JOptionPane.showMessageDialog(billingFrame, "Product key not found.");
             }
 
-        } catch(IOException ex){
+        }
+        catch(IOException ex){
             JOptionPane.showMessageDialog(billingFrame, "Error reading inventory file: " + ex.getMessage());
         }
     }
 
-    // method for generating bill
+    //method for updating the total price whenever it is changed in the table
+    private void updateTotalPrice(){
+        totalPrice = 0.0;
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            double price = Double.parseDouble(tableModel.getValueAt(i, 2).toString());
+            int quantity = Integer.parseInt(tableModel.getValueAt(i, 3).toString());
+            totalPrice += price * quantity;
+        }
+        totalLabel.setText("Total: P" + totalPrice);
+    }
+
+    //method for generating bill
     private void generateBill(){
         if(tableModel.getRowCount() == 0){
             JOptionPane.showMessageDialog(billingFrame, "No items in the order to generate a bill.");
@@ -186,54 +182,52 @@ public class BillingFrame{
         }
 
         int orderKey = generateOrderKey();
-        try(BufferedWriter writer = new BufferedWriter(new FileWriter(ORDERS_FILE, true))) {
-            writer.write(orderKey + "\n");              //writes the order key first
+        try(BufferedWriter writer = new BufferedWriter(new FileWriter(ORDERS_FILE, true))){
+            writer.write(orderKey + "\n");                                     //writes the order key first
 
-            //then writes the products next
-            for(int i = 0; i < tableModel.getRowCount(); i++){
-                writer.write(tableModel.getValueAt(i, 0) + "," 
-                        + tableModel.getValueAt(i, 1) + ","   
-                        + tableModel.getValueAt(i, 2) + ","   
-                        + tableModel.getValueAt(i, 3) + "\n");
+            for (int i = 0; i < tableModel.getRowCount(); i++) {
+                writer.write(tableModel.getValueAt(i, 0) + ","          //writes the Product ID
+                        + tableModel.getValueAt(i, 1) + ","             //writes the Product Name
+                        + tableModel.getValueAt(i, 2) + ","             //writes the Price
+                        + tableModel.getValueAt(i, 3) + ","             //writes the Quantity
+                        + tableModel.getValueAt(i, 4) + "\n");          //writes the Company
             }
 
-            writer.write(totalPrice + "\n\n");             //last writes the total in the txt last
-            JOptionPane.showMessageDialog(billingFrame, "Bill Generated...Order Key: " + orderKey);
+            writer.write(totalPrice + "\n\n");                                  //writes the total amount
 
-        } catch(IOException ex){
+            JOptionPane.showMessageDialog(billingFrame, "Bill Generated...Order Key: " + orderKey);
+        }
+        catch(IOException ex){
             JOptionPane.showMessageDialog(billingFrame, "Error writing to orders file: " + ex.getMessage());
         }
     }
 
-    //method for delete button
+    //method for deleting product
     private void deleteSelectedProduct(){
         int selectedRow = inventoryTable.getSelectedRow();
-        if (selectedRow != -1) {
-            double price = Double.parseDouble(tableModel.getValueAt(selectedRow, 2).toString());
-            totalPrice -= price; 
+        if(selectedRow != -1){
             tableModel.removeRow(selectedRow);
-            totalLabel.setText("Total: P" + totalPrice);
-        } else {
+            updateTotalPrice();
+        } 
+        else{
             JOptionPane.showMessageDialog(billingFrame, "Please select a product to delete.");
         }
     }
 
-    //method to generate 4 digit unique order key
+    //method for generating four digit order key
     private int generateOrderKey(){
         Random rand = new Random();
-        return 1000 + rand.nextInt(9000); // Generates random number between 1000 and 9999
+        return 1000 + rand.nextInt(9000);
     }
 
-    //method for going back
+    //method to go back
     private void goBack(){
         billingFrame.dispose();
         new ReceptionistDashboard();
     }
-    // Method to handle logout
-    private void logout() {
-        billingFrame.dispose(); // Close BillingFrame
-        new login.Login().setVisible(true); // Open Login screen
+
+    //main method (used for testing - delete nalangs)
+    public static void main(String[] args){
+        new BillingFrame();
     }
-    
-    
 }
