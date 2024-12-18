@@ -48,24 +48,21 @@
       <SubComponents>
         <Component class="employee.Table" name="table1">
           <Properties>
+            <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+              <Color blue="ff" green="d7" red="88" type="rgb"/>
+            </Property>
             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-              <Table columnCount="7" rowCount="4">
+              <Table columnCount="6" rowCount="4">
                 <Column editable="true" title="Employee ID" type="java.lang.Object"/>
                 <Column editable="true" title="First Name" type="java.lang.Object"/>
                 <Column editable="true" title="Last Name" type="java.lang.Object"/>
                 <Column editable="true" title="Gender" type="java.lang.Object"/>
                 <Column editable="true" title="Position" type="java.lang.Object"/>
-                <Column editable="true" title="Date Member" type="java.lang.Object"/>
                 <Column editable="true" title="Password" type="java.lang.Object"/>
               </Table>
             </Property>
             <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
               <TableColumnModel selectionModel="0">
-                <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
-                  <Title/>
-                  <Editor/>
-                  <Renderer/>
-                </Column>
                 <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
                   <Title/>
                   <Editor/>

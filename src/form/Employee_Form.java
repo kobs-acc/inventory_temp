@@ -1,13 +1,6 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
- */
+
 package form;
 
-/**
- *
- * @author Joy De Castro
- */
 
 import java.io.*;
 import java.util.*;
@@ -24,8 +17,8 @@ public class Employee_Form extends javax.swing.JPanel {
     public Employee_Form() {
         initComponents();
         setupListeners();
+        refreshTableData();
     }
-    
     
     // Set up listeners for buttons
     private void setupListeners() {
@@ -115,66 +108,66 @@ public class Employee_Form extends javax.swing.JPanel {
     }
 
     
-     // Add new employee to users.txt
- private void handleAddBtn() {
-    String firstName = FirstName.getText();
-    String lastName = LastName.getText();
-    String gender = GenderComboBox.getSelectedItem().toString();
-    String position = PositionComboBox.getSelectedItem().toString();
-    String password = new String(PasswordField.getPassword()); // Capture the password
+    // Add new employee to users.txt
+    private void handleAddBtn() {
+       String firstName = FirstName.getText();
+       String lastName = LastName.getText();
+       String gender = GenderComboBox.getSelectedItem().toString();
+       String position = PositionComboBox.getSelectedItem().toString();
+       String password = new String(PasswordField.getPassword()); // Capture the password
 
-    // Validate required fields
-    if (firstName.trim().isEmpty() || 
-        lastName.trim().isEmpty() || 
-        gender.equals("Choose") || 
-        position.equals("Choose") || 
-        password.isEmpty()) {  // Check if password is empty
-        JOptionPane.showMessageDialog(this, "Please fill in all fields correctly!");
-        return;
-    }
-    
-    
-    
-    // Validate password length
-    if (password.length() < 6) {
-        JOptionPane.showMessageDialog(this, "Password must be at least 6 characters long.");
-        return;
-    }
-    
+       // Validate required fields
+       if (firstName.trim().isEmpty() || 
+           lastName.trim().isEmpty() || 
+           gender.equals("Choose") || 
+           position.equals("Choose") || 
+           password.isEmpty()) {  // Check if password is empty
+           JOptionPane.showMessageDialog(this, "Please fill in all fields correctly!");
+           return;
+       }
 
-    // Generate or use existing Employee ID
-    String empID;
-    if (NewRadBtn.isSelected() || EmployeeId.getText().trim().isEmpty()) {
-        empID = generateEmployeeID();  // Generate Employee ID if "New" is selected
-    } else {
-        empID = EmployeeId.getText().trim();
-    }
 
-    // Rest of your add logic remains the same
-    try {
-        File file = new File("src/user/users.txt");
-        List<String[]> users = readUsersFromFile(file);
 
-        // Check for duplicate Employee ID
-        if (users.stream().anyMatch(user -> user[0].equals(empID))) {
-            JOptionPane.showMessageDialog(this, "Duplicate Employee ID detected.");
-            return;
-        }
+       // Validate password length
+       if (password.length() < 6) {
+           JOptionPane.showMessageDialog(this, "Password must be at least 6 characters long.");
+           return;
+       }
 
-        // Add the user (now with password included)
-        users.add(new String[]{empID, firstName, lastName, gender, position, password});
-        writeUsersToFile(file, users);
 
-        // Refresh the table
-        refreshTableData();
-        clearFields();
+       // Generate or use existing Employee ID
+       String empID;
+       if (NewRadBtn.isSelected() || EmployeeId.getText().trim().isEmpty()) {
+           empID = generateEmployeeID();  // Generate Employee ID if "New" is selected
+       } else {
+           empID = EmployeeId.getText().trim();
+       }
 
-        JOptionPane.showMessageDialog(this, "Employee added successfully!");
-    } catch (IOException e) {
-        JOptionPane.showMessageDialog(this, "Error accessing users file: " + e.getMessage());
-        e.printStackTrace();
-    }
-}
+       // Rest of your add logic remains the same
+       try {
+           File file = new File("src/user/users.txt");
+           List<String[]> users = readUsersFromFile(file);
+
+           // Check for duplicate Employee ID
+           if (users.stream().anyMatch(user -> user[0].equals(empID))) {
+               JOptionPane.showMessageDialog(this, "Duplicate Employee ID detected.");
+               return;
+           }
+
+           // Add the user (now with password included)
+           users.add(new String[]{empID, firstName, lastName, gender, position, password});
+           writeUsersToFile(file, users);
+
+           // Refresh the table
+           refreshTableData();
+           clearFields();
+
+           JOptionPane.showMessageDialog(this, "Employee added successfully!");
+       } catch (IOException e) {
+           JOptionPane.showMessageDialog(this, "Error accessing users file: " + e.getMessage());
+           e.printStackTrace();
+       }
+   }
 
 
 
@@ -196,7 +189,6 @@ public class Employee_Form extends javax.swing.JPanel {
             }
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this, "Error refreshing table: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
@@ -271,36 +263,36 @@ public class Employee_Form extends javax.swing.JPanel {
         EmployeeId.setEnabled(true);
     }
 
-private String generateEmployeeID() {
-    String position = PositionComboBox.getSelectedItem().toString();
-    if (position.equals("Choose")) {
-        return "";
-    }
-    String abbreviation = switch (position) {
-        case "Manager" -> "MGR";
-        case "Receptionist" -> "REC";
-        case "Security" -> "SEC";
-        case "Stockers" -> "STK";
-        default -> "EMP";
-    };
-
-    // Use an array as a mutable container for uniqueID
-    final String[] uniqueID = {abbreviation + (100000 + new Random().nextInt(900000))};
-    File file = new File("src/user/users.txt");
-
-    try {
-        List<String[]> users = readUsersFromFile(file);
-
-        // Ensure ID is unique
-        while (users.stream().anyMatch(user -> user != null && user.length > 0 && user[0].equals(uniqueID[0]))) {
-            uniqueID[0] = abbreviation + (100000 + new Random().nextInt(900000));
+    private String generateEmployeeID() {
+        String position = PositionComboBox.getSelectedItem().toString();
+        if (position.equals("Choose")) {
+            return "";
         }
-    } catch (IOException e) {
-        e.printStackTrace();
-    }
+        String abbreviation = switch (position) {
+            case "Manager" -> "MGR";
+            case "Receptionist" -> "REC";
+            case "Security" -> "SEC";
+            case "Stockers" -> "STK";
+            default -> "EMP";
+        };
 
-    return uniqueID[0];
-}
+        // Use an array as a mutable container for uniqueID
+        final String[] uniqueID = {abbreviation + (100000 + new Random().nextInt(900000))};
+        File file = new File("src/user/users.txt");
+
+        try {
+            List<String[]> users = readUsersFromFile(file);
+
+            // Ensure ID is unique
+            while (users.stream().anyMatch(user -> user != null && user.length > 0 && user[0].equals(uniqueID[0]))) {
+                uniqueID[0] = abbreviation + (100000 + new Random().nextInt(900000));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return uniqueID[0];
+    }
 
 
     // Read users from file
@@ -359,8 +351,8 @@ private String generateEmployeeID() {
         NewRadBtn = new javax.swing.JRadioButton();
         AddBtn = new javax.swing.JButton();
         ClearBtn1 = new javax.swing.JButton();
-        UpdateBtn = new javax.swing.JButton();
         DeleteBtn = new javax.swing.JButton();
+        UpdateBtn = new javax.swing.JButton();
         RefreshBtn = new javax.swing.JButton();
         PasswordField = new javax.swing.JPasswordField();
         Passwordabel = new javax.swing.JLabel();
@@ -440,6 +432,7 @@ private String generateEmployeeID() {
 
         AddBtn.setBackground(new java.awt.Color(10, 104, 235));
         AddBtn.setFont(new java.awt.Font("Google Sans Display", 1, 18)); // NOI18N
+        AddBtn.setForeground(new java.awt.Color(255, 255, 255));
         AddBtn.setText("Add");
         AddBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -449,6 +442,7 @@ private String generateEmployeeID() {
 
         ClearBtn1.setBackground(new java.awt.Color(186, 15, 82));
         ClearBtn1.setFont(new java.awt.Font("Google Sans Display", 1, 18)); // NOI18N
+        ClearBtn1.setForeground(new java.awt.Color(255, 255, 255));
         ClearBtn1.setText("Clear");
         ClearBtn1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -456,21 +450,23 @@ private String generateEmployeeID() {
             }
         });
 
-        UpdateBtn.setBackground(new java.awt.Color(186, 15, 167));
-        UpdateBtn.setFont(new java.awt.Font("Google Sans Display", 1, 18)); // NOI18N
-        UpdateBtn.setText("Delete");
-        UpdateBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                UpdateBtnActionPerformed(evt);
-            }
-        });
-
-        DeleteBtn.setBackground(new java.awt.Color(82, 186, 15));
+        DeleteBtn.setBackground(new java.awt.Color(186, 15, 167));
         DeleteBtn.setFont(new java.awt.Font("Google Sans Display", 1, 18)); // NOI18N
-        DeleteBtn.setText("Update");
+        DeleteBtn.setForeground(new java.awt.Color(255, 255, 255));
+        DeleteBtn.setText("Delete");
         DeleteBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 DeleteBtnActionPerformed(evt);
+            }
+        });
+
+        UpdateBtn.setBackground(new java.awt.Color(82, 186, 15));
+        UpdateBtn.setFont(new java.awt.Font("Google Sans Display", 1, 18)); // NOI18N
+        UpdateBtn.setForeground(new java.awt.Color(255, 255, 255));
+        UpdateBtn.setText("Update");
+        UpdateBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                UpdateBtnActionPerformed(evt);
             }
         });
 
@@ -542,17 +538,15 @@ private String generateEmployeeID() {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(UpdateBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(UpdateBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(DeleteBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addComponent(ClearBtn1, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
                                 .addComponent(AddBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGap(173, 173, 173))))
-            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                    .addContainerGap(445, Short.MAX_VALUE)
-                    .addComponent(DeleteBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(312, 312, 312)))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -585,18 +579,15 @@ private String generateEmployeeID() {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGap(27, 27, 27)
-                        .addComponent(UpdateBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(DeleteBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(UpdateBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGap(18, 18, 18)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(Passwordabel)
                             .addComponent(PasswordField, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap(25, Short.MAX_VALUE))
-            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                    .addContainerGap(205, Short.MAX_VALUE)
-                    .addComponent(DeleteBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(37, 37, 37)))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -647,13 +638,13 @@ private String generateEmployeeID() {
         // TODO add your handling code here:
     }//GEN-LAST:event_ClearBtn1ActionPerformed
 
-    private void UpdateBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_UpdateBtnActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_UpdateBtnActionPerformed
-
     private void DeleteBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DeleteBtnActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_DeleteBtnActionPerformed
+
+    private void UpdateBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_UpdateBtnActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_UpdateBtnActionPerformed
 
     private void RefreshBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RefreshBtnActionPerformed
         // TODO add your handling code here:

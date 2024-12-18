@@ -22,8 +22,8 @@ public class BillingFrame{
     private double totalPrice = 0.0;
 
     //files
-    private static final String INVENTORY_FILE = "inventory.txt";
-    private static final String ORDERS_FILE = "orders.txt";
+    private static final String INVENTORY_FILE = "src/reception/inventory.txt";
+    private static final String ORDERS_FILE = "src/reception/orders.txt";
 
     //constructor
     public BillingFrame(){
@@ -139,12 +139,12 @@ public class BillingFrame{
         return button;
     }
 
-    //method for searching product key and adding it to the order
+// method for searching product key and adding it to the order
     private void searchProductByKey(){
         String inputKey = productIdField.getText().trim();
-            if(inputKey.isEmpty()){
-                JOptionPane.showMessageDialog(billingFrame, "Please enter a product key.");
-                return;
+        if(inputKey.isEmpty()){
+            JOptionPane.showMessageDialog(billingFrame, "Please enter a product key.");
+            return;
         }
 
         try(BufferedReader br = new BufferedReader(new FileReader(INVENTORY_FILE))) {
@@ -154,7 +154,7 @@ public class BillingFrame{
             while((line = br.readLine()) != null) {
                 String[] data = line.split(",");
 
-                if(data.length >= 4 && data[3].equals(inputKey)) { // Product key matches
+                if(data.length >= 4 && data[3].trim().equals(inputKey)) { // Product key matches
                     // Name, Quantity, Price, Product Key, Category, Supplier
                     tableModel.addRow(new Object[]{
                         data[0],      // Item Name
@@ -178,7 +178,7 @@ public class BillingFrame{
         }
     }
 
-    //method for generating bill
+    // method for generating bill
     private void generateBill(){
         if(tableModel.getRowCount() == 0){
             JOptionPane.showMessageDialog(billingFrame, "No items in the order to generate a bill.");
@@ -189,7 +189,7 @@ public class BillingFrame{
         try(BufferedWriter writer = new BufferedWriter(new FileWriter(ORDERS_FILE, true))) {
             writer.write(orderKey + "\n");              //writes the order key first
 
-            //then wrties the products next
+            //then writes the products next
             for(int i = 0; i < tableModel.getRowCount(); i++){
                 writer.write(tableModel.getValueAt(i, 0) + "," 
                         + tableModel.getValueAt(i, 1) + ","   
@@ -200,8 +200,7 @@ public class BillingFrame{
             writer.write(totalPrice + "\n\n");             //last writes the total in the txt last
             JOptionPane.showMessageDialog(billingFrame, "Bill Generated...Order Key: " + orderKey);
 
-        }
-        catch(IOException ex){
+        } catch(IOException ex){
             JOptionPane.showMessageDialog(billingFrame, "Error writing to orders file: " + ex.getMessage());
         }
     }

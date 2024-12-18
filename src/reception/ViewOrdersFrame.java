@@ -115,22 +115,21 @@ public class ViewOrdersFrame {
         return button;
     }
 
-    //method for loading the order key to dropdown
+    // method for loading the order key to dropdown
     private void loadOrderKeys(){
-        try(BufferedReader reader = new BufferedReader(new FileReader("orders.txt"))){
+        try(BufferedReader reader = new BufferedReader(new FileReader("src/reception/orders.txt"))){
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.trim().matches("\\d+")) {      //match order keys
                     orderIdComboBox.addItem(line.trim());
                 }
             }
-        } 
-        catch(IOException ex){
+        } catch(IOException ex){
             JOptionPane.showMessageDialog(viewOrdersFrame, "Error reading orders file.");
         }
     }
 
-    //method for showing order details
+    // method for showing order details
     private void loadOrderDetails(){
         String selectedOrderKey = (String) orderIdComboBox.getSelectedItem();
         if (selectedOrderKey == null) return;
@@ -138,7 +137,7 @@ public class ViewOrdersFrame {
         tableModel.setRowCount(0);              //clears the table
         double totalPrice = 0;
 
-        try(BufferedReader reader = new BufferedReader(new FileReader("orders.txt"))){
+        try(BufferedReader reader = new BufferedReader(new FileReader("src/reception/orders.txt"))){
             String line;
             boolean isOrderFound = false;
 
